@@ -54,9 +54,14 @@ m = mesh_add_elements(m, 'beam2d', beam_conn, mat_beam);
 % --- Boundary conditions: clamp left edge of plate (x=0) ---
 left_nodes = mesh_find_nodes(plate, 1e-9, 'x', 0);
 nL = numel(left_nodes);
-bc.fixed_nodes = [left_nodes; left_nodes];
-bc.fixed_dofs  = [ones(nL,1); 2*ones(nL,1)];
-bc.fixed_vals  = zeros(2*nL, 1);
+% Also fix theta at n_conn: the Q4 plate has no rotational DOFs so it
+% provides no moment resistance at the connection node.  Without this
+% constraint the beam can rotate as a rigid body about n_conn (zero-energy
+% mechanism), making K_free singular.  Fixing theta=0 models a clamped
+% (welded) beam-to-plate joint.
+bc.fixed_nodes = [left_nodes; left_nodes; n_conn];
+bc.fixed_dofs  = [ones(nL,1); 2*ones(nL,1); 3];
+bc.fixed_vals  = zeros(2*nL+1, 1);
 
 % --- Tip load: downward (v-DOF = local dof 2 in 3-DOF system) ---
 loads.point_loads = [n_tip, 2, -P];
