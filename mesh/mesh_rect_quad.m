@@ -16,7 +16,8 @@ nNodes = (nx+1) * (ny+1);
 nElems = nx * ny;
 conn   = zeros(nElems, 4);
 
-nodeIdx = @(i,j) i*(nx+1) + j + 1;  % i=row(0-based), j=col(0-based)
+% meshgrid outputs column-major (x-outer): node at (ix=j, iy=i) -> j*(ny+1)+i+1
+nodeIdx = @(i,j) j*(ny+1) + i + 1;
 
 e = 1;
 for i = 0:ny-1

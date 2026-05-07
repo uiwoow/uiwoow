@@ -11,13 +11,14 @@ function mesh = mesh_rect_tri(Lx, Ly, nx, ny)
 x = linspace(0, Lx, nx+1);
 y = linspace(0, Ly, ny+1);
 [X, Y] = meshgrid(x, y);
-nodes  = [X(:), Y(:)];     % row-major: node (i,j) -> row i*(nx+1)+j+1
+nodes  = [X(:), Y(:)];
 
 nNodes = (nx+1) * (ny+1);
 nElems = 2 * nx * ny;
 conn   = zeros(nElems, 3);
 
-nodeIdx = @(i,j) i*(nx+1) + j + 1;  % i=row(0-based), j=col(0-based)
+% meshgrid outputs column-major (x-outer): node at (ix=j, iy=i) -> j*(ny+1)+i+1
+nodeIdx = @(i,j) j*(ny+1) + i + 1;
 
 e = 1;
 for i = 0:ny-1

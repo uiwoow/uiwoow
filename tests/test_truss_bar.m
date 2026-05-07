@@ -10,9 +10,9 @@ conn  = [1 2];
 mesh  = mesh_frame(nodes, conn, 'truss2d');
 mat.E = E; mat.A = A;
 
-bc.fixed_nodes = [1; 1];
-bc.fixed_dofs  = [1; 2];
-bc.fixed_vals  = [0; 0];
+bc.fixed_nodes = [1; 1; 2];
+bc.fixed_dofs  = [1; 2; 2];
+bc.fixed_vals  = [0; 0; 0];
 
 loads.point_loads = [2, 1, F];
 
