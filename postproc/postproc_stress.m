@@ -11,6 +11,11 @@ function [stress, strain] = postproc_stress(mesh, mat, u)
 %   For truss2d:  columns = [axial_force]
 %   For beam2d:   columns = [axial_force, shear_force, moment_node1, moment_node2]
 
+if strcmp(mesh.type, 'mixed')
+    [stress, strain] = postproc_stress_mixed(mesh, u);
+    return;
+end
+
 switch mesh.type
     case {'T3', 'Q4'}
         if isfield(mat, 'D')
@@ -88,6 +93,74 @@ switch mesh.type
             stress(e,:) = [N, V, M1, M2];
         end
         strain = stress;  % not meaningful separately; use stress
+end
+end
+
+% -----------------------------------------------------------------------
+function [stress, strain] = postproc_stress_mixed(mesh, u)
+% Recover stresses/strains for a mixed-element mesh.
+% Returns cell arrays (one cell per element) because element types have
+% different numbers of result components:
+%   T3 / Q4     -> {1x3}: [sxx, syy, txy]
+%   truss2d     -> {1x1}: [axial_force]
+%   beam2d      -> {1x4}: [N, V, M_node1, M_node2]
+
+stress = cell(mesh.nElems, 1);
+strain = cell(mesh.nElems, 1);
+
+for e = 1:mesh.nElems
+    etype   = mesh.elem_types{e};
+    mat_e   = mesh.materials{mesh.elem_mat(e)};
+    nodes_e = mesh.elem_conn{e};
+    xy_e    = mesh.nodes(nodes_e, :);
+    dofs_e  = elem_dofs(mesh, e);
+    u_e     = u(dofs_e);
+
+    switch etype
+        case {'T3', 'Q4'}
+            if isfield(mat_e, 'D')
+                D = mat_e.D;
+            else
+                D = mat_elastic_D(mat_e.E, mat_e.nu, mat_e.formulation);
+            end
+            switch etype
+                case 'T3'
+                    [~, ~, B] = elem_T3(xy_e, D, mesh.t);
+                case 'Q4'
+                    B = q4_B_centroid(xy_e);
+            end
+            eps_e      = B * u_e;
+            sig_e      = D * eps_e;
+            strain{e}  = eps_e';
+            stress{e}  = sig_e';
+
+        case 'truss2d'
+            dx = xy_e(2,1)-xy_e(1,1);  dy = xy_e(2,2)-xy_e(1,2);
+            L  = sqrt(dx^2+dy^2);
+            c  = dx/L;  s = dy/L;
+            delta     = (u_e(3)-u_e(1))*c + (u_e(4)-u_e(2))*s;
+            eps_e     = delta / L;
+            strain{e} = eps_e;
+            stress{e} = mat_e.E * eps_e * mat_e.A;  % axial force N
+
+        case 'beam2d'
+            dx = xy_e(2,1)-xy_e(1,1);  dy = xy_e(2,2)-xy_e(1,2);
+            L  = sqrt(dx^2+dy^2);  c = dx/L;  s = dy/L;
+            T6 = [c  s  0  0  0  0;
+                 -s  c  0  0  0  0;
+                  0  0  1  0  0  0;
+                  0  0  0  c  s  0;
+                  0  0  0 -s  c  0;
+                  0  0  0  0  0  1];
+            u_loc = T6 * u_e;
+            EA = mat_e.E * mat_e.A;  EI = mat_e.E * mat_e.Iz;
+            N  =  EA/L  * (u_loc(4) - u_loc(1));
+            V  =  12*EI/L^3 * (u_loc(2) - u_loc(5)) + 6*EI/L^2 * (u_loc(3) + u_loc(6));
+            M1 =   6*EI/L^2 * (u_loc(2) - u_loc(5)) + EI*(4/L*u_loc(3) + 2/L*u_loc(6));
+            M2 =  -6*EI/L^2 * (u_loc(2) - u_loc(5)) + EI*(2/L*u_loc(3) + 4/L*u_loc(6));
+            stress{e} = [N, V, M1, M2];
+            strain{e} = stress{e};
+    end
 end
 end
 

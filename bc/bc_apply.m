@@ -23,7 +23,8 @@ for i = 1:length(bc.fixed_nodes)
     switch mesh.type
         case {'T3', 'Q4', 'truss2d'}
             constrained(i) = 2*(node-1) + ldof;
-        case 'beam2d'
+        case {'beam2d', 'mixed'}
+            % mixed uses 3 DOFs/node universally: 1=u, 2=v, 3=theta
             constrained(i) = 3*(node-1) + ldof;
     end
 end

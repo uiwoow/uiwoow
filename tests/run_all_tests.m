@@ -2,10 +2,13 @@
 startup_fem2d;
 
 tests = {
-    'test_truss_bar',       @test_truss_bar;
-    'test_beam_cantilever', @test_beam_cantilever;
-    'test_T3_patch',        @test_T3_patch;
-    'test_Q4_patch',        @test_Q4_patch;
+    'test_truss_bar',           @test_truss_bar;
+    'test_beam_cantilever',     @test_beam_cantilever;
+    'test_T3_patch',            @test_T3_patch;
+    'test_Q4_patch',            @test_Q4_patch;
+    'test_mixed_pure_beam',     @test_mixed_pure_beam;
+    'test_mixed_pure_Q4',       @test_mixed_pure_Q4;
+    'test_mixed_beam_to_Q4',    @test_mixed_beam_to_Q4;
 };
 
 n_pass = 0; n_fail = 0;

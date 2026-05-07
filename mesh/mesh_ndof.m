@@ -10,6 +10,10 @@ switch mesh.type
         n = 2 * mesh.nNodes;
     case 'beam2d'
         n = 3 * mesh.nNodes;
+    case 'mixed'
+        % Universal 3-DOF/node system: [u, v, theta] at every node.
+        % Continuum/truss elements only activate [u,v]; beam uses all three.
+        n = 3 * mesh.nNodes;
     otherwise
         error('mesh_ndof: unknown element type ''%s''.', mesh.type);
 end

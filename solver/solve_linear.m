@@ -10,6 +10,12 @@ function u = solve_linear(K, f, mesh, bc)
 % Applies Dirichlet BCs by elimination, then solves the reduced system
 % using MATLAB's sparse direct solver (backslash / UMFPACK).
 
+% For mixed meshes, pin theta at continuum/truss-only nodes so K is
+% non-singular (those DOFs carry zero stiffness without this constraint).
+if strcmp(mesh.type, 'mixed')
+    bc = bc_auto_orphan_rot(mesh, bc);
+end
+
 [K_free, f_free, free_dofs, u] = bc_apply(K, f, mesh, bc);
 
 % Check for singularity (unfixed rigid body modes)
