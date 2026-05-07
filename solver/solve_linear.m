@@ -19,7 +19,7 @@ end
 [K_free, f_free, free_dofs, u] = bc_apply(K, f, mesh, bc);
 
 % Check for singularity (unfixed rigid body modes)
-if condest(K_free) > 1e14
+if ~isempty(free_dofs) && condest(K_free) > 1e14
     warning('solve_linear: K_free appears near-singular (condest > 1e14). Check BCs.');
 end
 

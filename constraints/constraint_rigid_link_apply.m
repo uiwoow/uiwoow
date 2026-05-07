@@ -34,21 +34,30 @@ if isscalar(slave_nodes) && slave_nodes == master_node
     error('constraint_rigid_link_apply: master and slave cannot be the same node.');
 end
 
-if nargin < 6 || isempty(alpha)
-    d = abs(diag(K));
-    d_max = max(d(d > 0));
-    if isempty(d_max) || d_max == 0
-        d_max = 1;
-    end
-    alpha = 1e7 * d_max;
-end
-
 x_m = mesh.nodes(master_node, 1);
 y_m = mesh.nodes(master_node, 2);
 
 dof_um  = 3*(master_node-1) + 1;
 dof_vm  = 3*(master_node-1) + 2;
 dof_thm = 3*(master_node-1) + 3;
+
+if nargin < 6 || isempty(alpha)
+    % Scale alpha by the master node's rotational (theta) stiffness so that
+    % the penalty stays proportional to the beam bending stiffness, not the
+    % (potentially much stiffer) plate stiffness.  This prevents catastrophic
+    % ill-conditioning when E_plate >> E_beam.
+    d_thm = abs(K(dof_thm, dof_thm));
+    if d_thm > 0
+        alpha = 1e10 * d_thm;
+    else
+        d = abs(diag(K));  d_pos = d(d > 0);
+        if isempty(d_pos)
+            alpha = 1e10;
+        else
+            alpha = 1e7 * max(d_pos);
+        end
+    end
+end
 
 for k = 1:numel(slave_nodes)
     ns = slave_nodes(k);
