@@ -9,6 +9,7 @@ tests = {
     'test_mixed_pure_beam',     @test_mixed_pure_beam;
     'test_mixed_pure_Q4',       @test_mixed_pure_Q4;
     'test_mixed_beam_to_Q4',    @test_mixed_beam_to_Q4;
+    'test_rigid_link',          @test_rigid_link;
 };
 
 n_pass = 0; n_fail = 0;

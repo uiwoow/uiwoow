@@ -12,5 +12,6 @@ addpath(fullfile(root, 'solver'));
 addpath(fullfile(root, 'postproc'));
 addpath(fullfile(root, 'examples'));
 addpath(fullfile(root, 'tests'));
+addpath(fullfile(root, 'constraints'));
 disp('fem2d framework loaded.');
 end

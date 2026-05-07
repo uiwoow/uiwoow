@@ -7,6 +7,11 @@ function postproc_plot_stress(mesh, stress, component, label)
 %   label     - string label for colorbar (optional)
 if nargin < 4, label = sprintf('Component %d', component); end
 
+if strcmp(mesh.type, 'mixed')
+    error(['postproc_plot_stress: use postproc_plot_mixed() for mixed-element meshes.\n' ...
+           'It renders continuum von Mises and beam forces in a single combined figure.']);
+end
+
 vals = stress(:, component);
 
 figure;
